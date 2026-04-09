@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_product_stock_status_tree" model="ir.ui.view">
+            <field name="name">product.product.stock.status.tree</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_product_tree_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='qty_available']" position="after">
+                    <field name="stock_status" widget="badge"
+                        decoration-danger="stock_status == 'red'"
+                        decoration-warning="stock_status == 'yellow'"
+                        decoration-success="stock_status == 'green'" />
+                </xpath>
+            </field>
+        </record>
+
+        <menuitem id="menu_mgmt_stock" name="Stock Status" parent="menu_mgmt_root"
+            action="stock.product_template_action_product" sequence="20" />
+    </data>
+</odoo>

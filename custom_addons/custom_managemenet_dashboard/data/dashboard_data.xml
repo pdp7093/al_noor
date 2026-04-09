@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <data noupdate="1">
+
+        <record id="main_management_dashboard" model="management.dashboard">
+
+            <field name="name">Executive Dashboard</field>
+
+        </record>
+
+    </data>
+
+</odoo>

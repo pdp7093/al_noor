@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_mgmt_dashboard_kanban" model="ir.ui.view">
+            <field name="name">management.dashboard.kanban</field>
+            <field name="model">management.dashboard</field>
+            <field name="arch" type="xml">
+                <kanban create="false" class="o_management_dashboard_view o_kanban_dashboard" style="width: 100%; max-width: 100%; margin: 0; padding: 0;">
+                    <field name="name" />
+                    <field name="production_today" />
+                    <field name="pending_deliveries" />
+                    <field name="outstanding_payments" />
+                    <field name="stock_red" />
+                    <field name="stock_yellow" />
+                    <field name="stock_green" />
+                    <field name="top_products_html" />
+
+                    <templates>
+                        <t t-name="card">
+                            <div class="o_kanban_card_content o_management_dashboard_card p-0 m-0 w-100" style="width: 100%; max-width: 100%; min-height: 100vh;">
+                                <div class="container-fluid p-4 o_management_dashboard_container" style="width: 100%; max-width: 100%; padding: 1.5rem;">
+
+                                    <div
+                                        class="d-flex justify-content-between align-items-center mb-4">
+                                        <h3 class="fw-bold text-dark m-0">
+                                            <i class="fa fa-tachometer text-primary me-2" />
+                                            <field name="name" />
+                                        </h3>
+                                        <span
+                                            class="badge rounded-pill bg-primary-light text-primary px-3 py-2 border border-primary">
+                                            Live Status
+                                        </span>
+                                    </div>
+
+                                    <div class="row g-4">
+                                        <div class="col-12 col-lg-4">
+                                            <div
+                                                class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-elevate">
+                                                <div class="card-body p-4 d-flex align-items-center">
+                                                    <div
+                                                        class="rounded-circle bg-primary-light p-3 me-3 text-primary">
+                                                        <i class="fa fa-cogs fa-2x" />
+                                                    </div>
+                                                    <div>
+                                                        <h2 class="fw-bolder mb-0 text-primary">
+                                                            <field name="production_today" />
+                                                        </h2>
+                                                        <p
+                                                            class="text-muted small fw-bold mb-0 text-uppercase tracking-wider">Production
+                                                            Today</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-lg-4">
+                                            <div
+                                                class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-elevate">
+                                                <div class="card-body p-4 d-flex align-items-center">
+                                                    <div
+                                                        class="rounded-circle bg-warning-light p-3 me-3 text-warning">
+                                                        <i class="fa fa-truck fa-2x" />
+                                                    </div>
+                                                    <div>
+                                                        <h2 class="fw-bolder mb-0 text-warning">
+                                                            <field name="pending_deliveries" />
+                                                        </h2>
+                                                        <p
+                                                            class="text-muted small fw-bold mb-0 text-uppercase tracking-wider">Pending
+                                                            Deliveries</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-lg-4">
+                                            <div
+                                                class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-elevate bg-gradient-success-light">
+                                                <div class="card-body p-4 d-flex align-items-center">
+                                                    <div
+                                                        class="rounded-circle bg-success-light p-3 me-3 text-success">
+                                                        <i class="fa fa-money fa-2x" />
+                                                    </div>
+                                                    <div>
+                                                        <h2 class="fw-bolder mb-0 text-success"
+                                                            style="font-size: 1.8rem;">
+                                                            <field name="outstanding_payments" />
+                                                        </h2>
+                                                        <p
+                                                            class="text-muted small fw-bold mb-0 text-uppercase tracking-wider">Outstanding
+                                                            Payments</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-4 mt-2">
+
+                                        <div class="col-12 col-lg-8">
+                                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                                <div
+                                                    class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                                                    <h5 class="fw-bold"><i
+                                                            class="fa fa-heartbeat text-danger me-2" />Raw
+                                                        Material Health</h5>
+                                                </div>
+                                                <div class="card-body p-4">
+                                                    <div
+                                                        class="d-flex justify-content-around align-items-end mb-3"
+                                                        style="height: 250px;">
+                                                        <div class="text-center w-25 px-2">
+                                                            <div
+                                                                class="bg-danger rounded-top shadow-sm transition-height"
+                                                                t-attf-style="height: #{record.stock_red.raw_value * 10 + 30}px;"
+                                                                title="Critical Stock"></div>
+                                                            <div class="mt-2 fw-bold text-danger">
+                                                                <field name="stock_red" />
+                                                            </div>
+                                                            <small
+                                                                class="text-muted text-uppercase fw-bold"
+                                                                style="font-size: 0.65rem;">Critical</small>
+                                                        </div>
+                                                        <div class="text-center w-25 px-2">
+                                                            <div
+                                                                class="bg-warning rounded-top shadow-sm transition-height"
+                                                                t-attf-style="height: #{record.stock_yellow.raw_value * 10 + 30}px;"
+                                                                title="Low Stock"></div>
+                                                            <div class="mt-2 fw-bold text-warning">
+                                                                <field name="stock_yellow" />
+                                                            </div>
+                                                            <small
+                                                                class="text-muted text-uppercase fw-bold"
+                                                                style="font-size: 0.65rem;">Warning</small>
+                                                        </div>
+                                                        <div class="text-center w-25 px-2">
+                                                            <div
+                                                                class="bg-success rounded-top shadow-sm transition-height"
+                                                                t-attf-style="height: #{record.stock_green.raw_value * 10 + 30}px;"
+                                                                title="Safe Stock"></div>
+                                                            <div class="mt-2 fw-bold text-success">
+                                                                <field name="stock_green" />
+                                                            </div>
+                                                            <small
+                                                                class="text-muted text-uppercase fw-bold"
+                                                                style="font-size: 0.65rem;">Safe</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-lg-4">
+                                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                                <div
+                                                    class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                                                    <h5 class="fw-bold"><i
+                                                            class="fa fa-star text-warning me-2" />Top
+                                                        5 Products</h5>
+                                                </div>
+                                                <div class="card-body p-4 pt-2">
+                                                    <div class="table-responsive"
+                                                        style="max-height: 280px;">
+                                                        <field name="top_products_html"
+                                                            widget="html" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="action_mgmt_dashboard" model="ir.actions.act_window">
+            <field name="name">Management Dashboard</field>
+            <field name="res_model">management.dashboard</field>
+            <field name="view_mode">kanban</field>
+            <field name="target">main</field>
+        </record>
+
+        <menuitem id="menu_mgmt_root" name="Management" sequence="1" />
+        <menuitem id="menu_mgmt_dashboard" name="Dashboard" parent="menu_mgmt_root"
+            action="action_mgmt_dashboard" sequence="10" />
+    </data>
+</odoo>
