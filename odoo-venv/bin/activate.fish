@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/brainstream/Documents/Odoo_pratice/odoo-venv
+set -gx VIRTUAL_ENV /home/brainstream/Documents/al_noor/odoo-venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

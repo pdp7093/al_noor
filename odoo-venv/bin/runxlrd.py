@@ -1,4 +1,4 @@
-#!/home/brainstream/Documents/Odoo_pratice/odoo-venv/bin/python3
+#!/home/brainstream/Documents/al_noor/odoo-venv/bin/python3
 # Copyright (c) 2005-2012 Stephen John Machin, Lingfo Pty Ltd
 # This script is part of the xlrd package, which is released under a
 # BSD-style licence.

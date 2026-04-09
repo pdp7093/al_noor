@@ -1,4 +1,4 @@
-#!/home/brainstream/Documents/Odoo_pratice/odoo-venv/bin/python3
+#!/home/brainstream/Documents/al_noor/odoo-venv/bin/python3
 # :Copyright: © 2015 Günter Milde.
 # :License: Released under the terms of the `2-Clause BSD license`_, in short:
 #

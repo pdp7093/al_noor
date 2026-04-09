@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_picking_form_driver" model="ir.ui.view">
+        <field name="name">stock.picking.driver.name</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Delivery info ke andar add kar -->
+            <xpath expr="//field[@name='picking_properties']" position="before">
+                <group string="Driver Info">
+                    <field name="driver_name"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

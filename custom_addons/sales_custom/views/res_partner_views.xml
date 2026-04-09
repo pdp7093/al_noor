@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_credit_limit" model="ir.ui.view">
+        <field name="name">res.partner.credit.limit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//group[.//field[@name='vat']]" position="inside">
+                <group>
+                    <field name="credit_limit" />
+                    <field name="credit_used" readonly="1"/>
+                    <field name="remaining_credit" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

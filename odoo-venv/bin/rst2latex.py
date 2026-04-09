@@ -1,4 +1,4 @@
-#!/home/brainstream/Documents/Odoo_pratice/odoo-venv/bin/python3
+#!/home/brainstream/Documents/al_noor/odoo-venv/bin/python3
 
 # $Id: rst2latex.py 9115 2022-07-28 17:06:24Z milde $
 # Author: David Goodger <goodger@python.org>

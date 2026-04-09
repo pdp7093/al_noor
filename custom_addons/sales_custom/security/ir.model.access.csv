@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_top_customer_report_salesman,top.customer.report.salesman,model_top_customer_report,sales_team.group_sale_salesman,1,0,0,0
+access_top_customer_report_manager,top.customer.report.manager,model_top_customer_report,sales_team.group_sale_manager,1,0,0,0

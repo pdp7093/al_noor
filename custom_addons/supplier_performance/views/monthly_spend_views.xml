@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+              
+    <!-- LIST VIEW -->
+    <record id="view_monthly_spend_list" model="ir.ui.view">
+        <field name="name">monthly.spend.list</field>
+        <field name="model">supplier.monthly.spend</field>
+
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="partner_id"/>
+                <field name="month"/>
+                <field name="total_amount"/>
+            </list>
+        </field>
+    </record>
+
+
+    <!-- ACTION -->
+    <record id="action_monthly_spend" model="ir.actions.act_window">
+        <field name="name">Monthly Spend</field>
+        <field name="res_model">supplier.monthly.spend</field>
+        <field name="view_mode">list</field>
+    </record>
+
+
+    <!-- MENU -->
+    <menuitem id="menu_monthly_spend"
+              name="Monthly Spend"
+              parent="menu_supplier_analytics_root"
+              action="action_monthly_spend"
+              sequence="20"/>
+
+</odoo>

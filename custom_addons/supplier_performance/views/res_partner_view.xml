@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =========================
+        Supplier Performance LIST VIEW
+    ========================== -->
+    <record id="view_supplier_performance_list" model="ir.ui.view">
+        <field name="name">supplier.performance.list</field>
+        <field name="model">res.partner</field>
+
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="name"/>
+                <field name="on_time_delivery_rate" widget="percentage"/>
+                <field name="avg_lead_time"/>
+                <field name="return_rate" widget="percentage"/>
+            </list>
+        </field>
+    </record>
+
+
+    <!-- =========================
+        Supplier Performance FORM VIEW
+    ========================== -->
+    <record id="view_supplier_performance_form" model="ir.ui.view">
+        <field name="name">supplier.performance.form</field>
+        <field name="model">res.partner</field>
+
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group string="Supplier">
+                        <field name="name"/>
+                    </group>
+
+                    <group string="Performance">
+                        <field name="on_time_delivery_rate" widget="percentage"/>
+                        <field name="avg_lead_time"/>
+                        <field name="return_rate" widget="percentage"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- =========================
+        ACTION (IMPORTANT FIX HERE)
+    ========================== -->
+    <record id="action_supplier_performance" model="ir.actions.act_window">
+        <field name="name">Supplier Performance</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+
+        <!-- THIS LINE FIXES YOUR ISSUE -->
+        <field name="view_id" ref="view_supplier_performance_list"/>
+
+        <field name="domain">[('supplier_rank', '>', 0)]</field>
+    </record>
+
+
+    <!-- =========================
+        MENU
+    ========================== -->
+    <menuitem id="menu_supplier_analytics_root"
+              name="Supplier Analytics"
+              sequence="10"/>
+
+    <menuitem id="menu_supplier_performance"
+              name="Supplier Performance"
+              parent="menu_supplier_analytics_root"
+              action="action_supplier_performance"/>
+
+</odoo>

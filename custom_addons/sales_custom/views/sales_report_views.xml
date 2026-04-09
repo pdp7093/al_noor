@@ -1,0 +1,28 @@
+<odoo>
+
+    <!-- list View -->
+    <record id="view_top_customer_list" model="ir.ui.view">
+        <field name="name">top.customer.report.list</field>
+        <field name="model">top.customer.report</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="partner_id"/>
+                <field name="total_amount"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_top_customer_report" model="ir.actions.act_window">
+        <field name="name">Top Customers</field>
+        <field name="res_model">top.customer.report</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_top_customer_report"
+              name="Top Customers"
+              parent="sale.sale_menu_root"
+              action="action_top_customer_report"/>
+
+</odoo>
