@@ -1,0 +1,37 @@
+<odoo>
+    <record id="ir_cron_daily_stock_report" model="ir.cron">
+        <field name="name">Daily Stock Report</field>
+
+        <!-- Model -->
+        <field name="model_id" ref="model_stock_report" />
+
+        <!-- Execution type -->
+        <field name="state">code</field>
+
+        <!-- Method call -->
+        <field name="code">model.send_daily_stock_report()</field>
+
+        <!-- Frequency -->
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+
+        <!-- Active -->
+        <field name="active">True</field>
+    </record>
+
+
+    <!-- Weekly Production Report -->
+    <record id="ir_cron_weekly_production_report" model="ir.cron">
+        <field name="name">Weekly Production Report</field>
+        <field name="model_id" ref="model_stock_report" />
+        <field name="state">code</field>
+        <field name="code">model.send_weekly_production_report()</field>
+
+        <field name="interval_number">1</field>
+        <field name="interval_type">weeks</field>
+
+        <field name="active">True</field>
+    </record>
+
+   
+</odoo>

@@ -1,0 +1,50 @@
+<odoo>
+    <record id="email_template_low_stock_alert" model="mail.template">
+        <field name="name">Low Stock Alert</field>
+        <field name="model_id" ref="stock.model_stock_warehouse_orderpoint"/>
+        <field name="subject">Alert: Low Stock for {{ object.product_id.display_name }}</field>
+        <field name="body_html" type="html">
+            <p>Hello Manager,</p>   
+            <p>Product <strong>{{ object.product_id.name }}</strong> has fallen below minimum level.</p>
+            <p>Current Qty: {{ object.product_id.qty_available }}</p>
+            <p>Minimum Required: {{ object.product_min_qty }}</p>
+        </field>
+    </record>
+
+    <record id="email_template_daily_stock_report" model="mail.template">
+        <field name="name">Daily Stock Report</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="subject">Daily Inventory Status Report</field>
+        <field name="body_html" type="html">
+            <p>Good Morning,</p>
+            <p>Please find the current stock levels in the system attached or check your Odoo dashboard.</p>
+        </field>
+    </record>
+
+    <record id="mail_template_ceo_monthly_report" model="mail.template">
+        <field name="name">CEO Monthly Revenue Report</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="subject">Al Noor Plastic - Monthly Revenue Report</field>
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; color: #333;">
+                <h2>Al Noor Plastic Industry LLC</h2>
+                <h3>Monthly Revenue Report</h3>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr style="background-color: #f2f2f2;">
+                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>Report Month:</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">{{ report_date }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>Total Revenue:</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold; color: green;">AED {{ total_revenue }}</td>
+                    </tr>
+                    <tr style="background-color: #f9f9f9;">
+                        <td style="border: 1px solid #ddd; padding: 10px;"><strong>Orders Processed:</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">{{ order_count }}</td>
+                    </tr>
+                </table>
+                <p>Best Regards,<br/>Inventory Management System</p>
+            </div>
+        </field>
+    </record>
+</odoo>
