@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 1. POLLING CRON (Default: SLEEPING) -->
+        <record id="ir_cron_niyu_forecast_poll" model="ir.cron">
+            <field name="name">Niyu AI: Poll Forecast Results</field>
+            <field name="model_id" ref="model_niyu_polling_job"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_check_results()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="False"/> <!-- SLEEPING -->
+        </record>
+
+        <!-- 2. DAILY TRIGGER CRON (Default: AWAKE) -->
+        <record id="ir_cron_niyu_daily_sync" model="ir.cron">
+            <field name="name">Niyu AI: Daily Demand Forecast</field>
+            <field name="model_id" ref="model_niyu_sync_engine"/>
+            <field name="state">code</field>
+            <field name="code">model.action_start_forecast()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 02:00:00')"/> <!-- Run at 2 AM -->
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

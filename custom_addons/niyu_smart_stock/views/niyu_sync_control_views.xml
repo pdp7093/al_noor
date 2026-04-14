@@ -1,0 +1,128 @@
+<odoo>
+    <record id="view_niyu_forecast_sync_wizard_form" model="ir.ui.view">
+        <field name="name">niyu.forecast.sync.wizard.form</field>
+        <field name="model">niyu.forecast.sync.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Run Forecast Sync" create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="tier" readonly="1"/>
+                            <field name="sku_limit" readonly="1"/>
+                            <field name="max_syncs_day" readonly="1"/>
+                            <field name="syncs_used_today" readonly="1"/>
+                            <field name="manual_left_today" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="active_job_id" readonly="1"/>
+                            <field name="active_job_status" readonly="1"/>
+                            <field name="latest_run_id" readonly="1"/>
+                            <field name="latest_run_state" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="confirmation_note" widget="html" nolabel="1" readonly="1"/>
+                    <field name="backend_message" nolabel="1" readonly="1" invisible="not backend_message"/>
+                    <field name="latest_run_message" nolabel="1" readonly="1" invisible="not latest_run_message"/>
+                </sheet>
+                <footer>
+                    <button name="action_confirm_sync" type="object" string="Proceed" class="btn-primary"/>
+                    <button name="action_open_latest_run" type="object" string="Open Latest Run" invisible="not latest_run_id"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_run_list_sync_control" model="ir.ui.view">
+        <field name="name">niyu.forecast.run.list.sync.control</field>
+        <field name="model">niyu.forecast.run</field>
+        <field name="inherit_id" ref="niyu_smart_stock.view_niyu_forecast_run_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='state']" position="after">
+                <field name="request_source" optional="show"/>
+                <field name="remote_status" optional="show"/>
+                <field name="status_checked_at" optional="show"/>
+                <field name="quota_syncs_left" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_run_form_sync_control" model="ir.ui.view">
+        <field name="name">niyu.forecast.run.form.sync.control</field>
+        <field name="model">niyu.forecast.run</field>
+        <field name="inherit_id" ref="niyu_smart_stock.view_niyu_forecast_run_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_refresh_remote_status" string="Refresh Remote Status" type="object" class="btn-secondary" groups="niyu_smart_stock.group_niyu_forecast_user"/>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,queued,running,done,failed,stale,expired</attribute>
+            </xpath>
+            <xpath expr="//field[@name='job_id']" position="after">
+                <field name="request_source" readonly="1"/>
+                <field name="remote_status" readonly="1"/>
+                <field name="status_checked_at" readonly="1"/>
+                <field name="quota_syncs_left" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_result_list_sync_control" model="ir.ui.view">
+        <field name="name">niyu.forecast.result.list.sync.control</field>
+        <field name="model">niyu.forecast.result</field>
+        <field name="inherit_id" ref="niyu_smart_stock.view_niyu_forecast_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_create_transfer']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_create_po']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_ignore']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_unignore']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_result_form_sync_control" model="ir.ui.view">
+        <field name="name">niyu.forecast.result.form.sync.control</field>
+        <field name="model">niyu.forecast.result</field>
+        <field name="inherit_id" ref="niyu_smart_stock.view_niyu_forecast_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_create_transfer']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_create_po']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_reset_execution_links']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_ignore']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_unignore']" position="attributes">
+                <attribute name="groups">niyu_smart_stock.group_niyu_forecast_manager</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="view_users_form_niyu_forecast_access" model="ir.ui.view">
+        <field name="name">res.users.form.niyu.forecast.access</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Niyu AI Access">
+                    <field name="niyu_forecast_access"/>
+                    <div class="text-muted">Choose whether this user has no access, read access, or manager access for the Niyu forecasting workspace.</div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

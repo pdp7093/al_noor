@@ -1,0 +1,294 @@
+<templates xml:space="preserve">
+    <t t-name="niyu_smart_stock.Dashboard">
+        <div class="o_niyu_dashboard h-100 overflow-auto" style="background:#f5f7fb;">
+            <div class="container-fluid px-4 py-4">
+
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <h1 class="fw-bold text-dark mb-1" style="letter-spacing:-0.4px;">
+                                    <t t-esc="state.title"/>
+                                </h1>
+                                <p class="text-muted mb-0">
+                                    <t t-esc="state.subtitle"/>
+                                </p>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <!-- <t t-if="state.can_manage">
+                                    <button class="btn btn-dark" t-on-click="onRunForecastClick">
+                                        <i class="fa fa-refresh me-2"/>Run Forecast
+                                    </button>
+                                </t> -->
+                                <button class="btn btn-outline-dark" t-on-click="() => this.openActionLines([], 'Action Lines')">
+                                    <i class="fa fa-list me-2"/>Open Action Lines
+                                </button>
+                                <button class="btn btn-outline-secondary" t-on-click="openLatestRun" t-att-disabled="!state.latest_run.id">
+                                    <i class="fa fa-clock-o me-2"/>Open Latest Run
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge rounded-pill bg-white text-dark border px-3 py-2">
+                                <strong class="me-2">Last Sync</strong>
+                                <t t-esc="state.last_sync"/>
+                            </span>
+                            <span class="badge rounded-pill px-3 py-2" t-att-class="this.getStatusBadgeClass(state.sync_status)">
+                                <strong class="me-2">Status</strong>
+                                <t t-esc="this.getStatusLabel(state.sync_status)"/>
+                            </span>
+                            <span class="badge rounded-pill bg-white text-dark border px-3 py-2">
+                                <strong class="me-2">Latest Run</strong>
+                                <t t-esc="state.latest_run.state_label || 'Not started'"/>
+                            </span>
+                            <span class="badge rounded-pill bg-white text-dark border px-3 py-2">
+                                <strong class="me-2">Warehouses Covered</strong>
+                                <t t-esc="state.latest_run.warehouse_count || 0"/>
+                            </span>
+                            <t t-if="state.subscription.tier">
+                                <span class="badge rounded-pill bg-white text-dark border px-3 py-2">
+                                    <strong class="me-2">Tier</strong>
+                                    <t t-esc="state.subscription.tier"/>
+                                </span>
+                            </t>
+
+                            <t t-if="state.subscription.sku_limit">
+                                <span class="badge rounded-pill bg-white text-dark border px-3 py-2">
+                                    <strong class="me-2">SKU Limit</strong>
+                                    <t t-esc="this.formatNumber(state.subscription.sku_limit)"/>
+                                </span>
+                            </t>
+
+                            <t t-if="state.subscription.manual_limit">
+                                <span class="badge rounded-pill bg-white text-dark border px-3 py-2">
+                                    <strong class="me-2">Refresh Max</strong>
+                                    <t t-esc="state.subscription.manual_limit"/>/day
+                                </span>
+                            </t>
+                            <t t-if="state.latest_run.quota_syncs_left !== false">
+                                <span class="badge rounded-pill bg-white text-dark border px-3 py-2">
+                                    <strong class="me-2">Syncs Left Today</strong>
+                                    <t t-esc="state.latest_run.quota_syncs_left"/>
+                                </span>
+                            </t>
+                        </div>
+
+                        <t t-if="state.sync_msg or state.latest_run.message">
+                            <div class="rounded-4 px-3 py-3" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                                <div class="small text-muted fw-semibold mb-1">Latest note</div>
+                                <div class="text-dark small">
+                                    <t t-esc="state.latest_run.message || state.sync_msg"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius:18px; cursor:pointer;" t-on-click="openUrgentLines">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="text-uppercase text-danger fw-semibold small">Urgent Action Lines</div>
+                                        <div class="display-6 fw-bold text-dark"><t t-esc="state.kpis.urgent_count"/></div>
+                                    </div>
+                                    <span class="badge text-bg-danger">Now</span>
+                                </div>
+                                <div class="text-muted small">Lines that need action or setup before stock risk grows.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius:18px; cursor:pointer;" t-on-click="openBuyBudgetLines">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="text-uppercase text-primary fw-semibold small">Buy Budget Needed</div>
+                                        <div class="display-6 fw-bold text-dark"><t t-esc="this.formatCurrency(state.kpis.buy_budget)"/></div>
+                                        <div class="text-muted small">Across <strong><t t-esc="state.kpis.buy_line_count || 0"/></strong> lines</div>
+                                    </div>
+                                    <span class="badge text-bg-primary">Buy</span>
+                                </div>
+                                <div class="text-muted small">Estimated purchase value for lines that still need buying.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius:18px; cursor:pointer;" t-on-click="openRebalanceLines">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="text-uppercase text-success fw-semibold small">Internal Rebalance</div>
+                                        <div class="h2 fw-bold text-dark mb-1"><t t-esc="this.formatQuantity(state.kpis.rebalance_qty)"/> units</div>
+                                        <div class="text-muted small">Across <strong><t t-esc="state.kpis.rebalance_count"/></strong> lines</div>
+                                    </div>
+                                    <span class="badge text-bg-success">Move</span>
+                                </div>
+                                <div class="text-muted small">Stock that can be covered by moving inventory between warehouses.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius:18px; cursor:pointer;" t-on-click="openSetupBlockers">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <div class="text-uppercase text-warning fw-semibold small">Setup Blockers</div>
+                                        <div class="display-6 fw-bold text-dark"><t t-esc="state.kpis.setup_blockers"/></div>
+                                    </div>
+                                    <span class="badge text-bg-warning">Fix</span>
+                                </div>
+                                <div class="text-muted small">Lines blocked by missing vendor, transfer source, or setup gaps.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-xl-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius:18px;">
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <h4 class="fw-bold mb-1">Action Queue</h4>
+                                    <div class="text-muted small">Start here. Open the exact work queue that needs attention.</div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <div class="border rounded-4 p-3 h-100" style="cursor:pointer; background:#fff;" t-on-click="() => this.openQueue('buy_now')">
+                                            <div class="d-flex justify-content-between mb-2"><strong>Buy Now</strong><span class="badge text-bg-primary"><t t-esc="state.queue_counts.buy_now || 0"/></span></div>
+                                            <div class="text-muted small">Purchase is the main next step.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="border rounded-4 p-3 h-100" style="cursor:pointer; background:#fff;" t-on-click="() => this.openQueue('transfer_now')">
+                                            <div class="d-flex justify-content-between mb-2"><strong>Transfer Now</strong><span class="badge text-bg-success"><t t-esc="state.queue_counts.transfer_now || 0"/></span></div>
+                                            <div class="text-muted small">Rebalance from another warehouse.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="border rounded-4 p-3 h-100" style="cursor:pointer; background:#fff;" t-on-click="() => this.openQueue('split_now')">
+                                            <div class="d-flex justify-content-between mb-2"><strong>Transfer + Buy</strong><span class="badge text-bg-info"><t t-esc="state.queue_counts.split_now || 0"/></span></div>
+                                            <div class="text-muted small">Move what you can, then buy the balance.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="border rounded-4 p-3 h-100" style="cursor:pointer; background:#fff;" t-on-click="() => this.openQueue('setup')">
+                                            <div class="d-flex justify-content-between mb-2"><strong>Setup Needed</strong><span class="badge text-bg-warning"><t t-esc="state.queue_counts.setup || 0"/></span></div>
+                                            <div class="text-muted small">Missing vendor or transfer source.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="border rounded-4 p-3 h-100" style="cursor:pointer; background:#fff;" t-on-click="() => this.openQueue('watch')">
+                                            <div class="d-flex justify-content-between mb-2"><strong>Watch</strong><span class="badge text-bg-secondary"><t t-esc="state.queue_counts.watch || 0"/></span></div>
+                                            <div class="text-muted small">No immediate action needed.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="border rounded-4 p-3 h-100" style="cursor:pointer; background:#fff;" t-on-click="() => this.openQueue('ignored')">
+                                            <div class="d-flex justify-content-between mb-2"><strong>Ignored</strong><span class="badge text-bg-dark"><t t-esc="state.queue_counts.ignored || 0"/></span></div>
+                                            <div class="text-muted small">Excluded from current planning.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6">
+                        <div class="row g-3 h-100">
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm h-100" style="border-radius:18px;">
+                                    <div class="card-body p-4">
+                                        <div class="mb-3">
+                                            <h4 class="fw-bold mb-1">Execution Progress</h4>
+                                            <div class="text-muted small">Tracks whether buy and transfer work is still pending or already done.</div>
+                                        </div>
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openExecution('pending')"><span>Pending</span><span class="badge text-bg-secondary"><t t-esc="state.execution_counts.pending || 0"/></span></div>
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openExecution('partial')"><span>Partially Executed</span><span class="badge text-bg-info"><t t-esc="state.execution_counts.partial || 0"/></span></div>
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openExecution('done')"><span>Executed</span><span class="badge text-bg-success"><t t-esc="state.execution_counts.done || 0"/></span></div>
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openExecution('blocked')"><span>Blocked</span><span class="badge text-bg-danger"><t t-esc="state.execution_counts.blocked || 0"/></span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm h-100" style="border-radius:18px;">
+                                    <div class="card-body p-4">
+                                        <div class="mb-3">
+                                            <h4 class="fw-bold mb-1">Inventory Health</h4>
+                                            <div class="text-muted small">Coverage health across the current planning snapshot.</div>
+                                        </div>
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openHealth('out')"><span>Stockout</span><span class="badge text-bg-danger"><t t-esc="state.health_counts.out || 0"/></span></div>
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openHealth('critical')"><span>Critical</span><span class="badge text-bg-warning"><t t-esc="state.health_counts.critical || 0"/></span></div>
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openHealth('normal')"><span>Healthy</span><span class="badge text-bg-success"><t t-esc="state.health_counts.normal || 0"/></span></div>
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openHealth('warning')"><span>Overstock</span><span class="badge text-bg-primary"><t t-esc="state.health_counts.warning || 0"/></span></div>
+                                            <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openHealth('ignored')"><span>Ignored</span><span class="badge text-bg-dark"><t t-esc="state.health_counts.ignored || 0"/></span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-xl-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius:18px;">
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <h4 class="fw-bold mb-1">Setup &amp; Data Issues</h4>
+                                    <div class="text-muted small">These lines need sourcing or planning cleanup before execution is smooth.</div>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openSetupIssue('missing_vendor')"><span>Missing Vendor</span><span class="badge text-bg-warning"><t t-esc="state.setup_counts.missing_vendor || 0"/></span></div>
+                                    <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openSetupIssue('missing_transfer_source')"><span>Missing Transfer Source</span><span class="badge text-bg-warning"><t t-esc="state.setup_counts.missing_transfer_source || 0"/></span></div>
+                                    <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openSetupIssue('no_rule')"><span>No Planning Rule</span><span class="badge text-bg-secondary"><t t-esc="state.setup_counts.no_rule || 0"/></span></div>
+                                    <div class="d-flex justify-content-between align-items-center border rounded-4 px-3 py-2" style="cursor:pointer;" t-on-click="() => this.openSetupIssue('multi_donor')"><span>Multiple Donors</span><span class="badge text-bg-info"><t t-esc="state.setup_counts.multi_donor || 0"/></span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius:18px;">
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <h4 class="fw-bold mb-1">Warehouse Pressure</h4>
+                                    <div class="text-muted small">Warehouses with the highest planning pressure right now.</div>
+                                </div>
+                                <t t-if="state.warehouse_pressure.length">
+                                    <div class="d-flex flex-column gap-2">
+                                        <t t-foreach="state.warehouse_pressure" t-as="item" t-key="item.warehouse_id">
+                                            <div class="border rounded-4 px-3 py-3" style="cursor:pointer; background:#fff;" t-on-click="() => this.openWarehouse(item.warehouse_id, item.warehouse_name)">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <strong class="text-dark"><t t-esc="item.warehouse_name"/></strong>
+                                                    <span class="badge text-bg-danger"><t t-esc="item.urgent_lines"/> urgent</span>
+                                                </div>
+                                                <div class="small text-muted d-flex flex-wrap gap-3">
+                                                    <span><strong class="text-dark"><t t-esc="this.formatCurrency(item.buy_budget)"/></strong> buy budget</span>
+                                                    <span><strong class="text-dark"><t t-esc="this.formatQuantity(item.transfer_qty)"/></strong> units transfer</span>
+                                                    <span><strong class="text-dark"><t t-esc="item.blocked_lines"/></strong> blocked</span>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="border rounded-4 px-3 py-4 text-muted small">No warehouse-level pressure is available yet.</div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

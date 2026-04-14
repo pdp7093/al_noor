@@ -1,0 +1,31 @@
+{
+    'name': 'AI Inventory Planning - Niyu Smart Stock',
+    'version': '19.0.26.3.0',
+    'category': 'Inventory/Planning',
+    'summary': 'Stock prediction using Smart AI models intelligently selected for your data. Odoo view, integrated natively inside Inventory module, inventory, inventory planning, inventory forecasting, inventory prediction, arima, ml, ai, machine learning, artifical intelligence, stock,sales prediction, rfq, quotation, request quotation, export excel, inventory management, demand forecasting, sales prediction, AI sales analysis, vendor, replenishment, replenish, order, purchase, po, purchase order, lead, lead time, inventory, inventory dashboard, warehouse, stock dashboard, inventory manager, management, inventory planning, free, freemium, premium, api key, token, warehouse management, product tracking, automated restocking, supply chain optimization, inventory levels, stock predictions, seasonal demand, lead time calculation,  business intelligence, data consolidation, stock movement analysis, order management, purchase planning. ai forecasting, chatgpt, gemini, vetrex, claude, codex, opus, openai, open ai, qwen, analytics, plan, planning, planner, demand, forecast, prediction, projection, trend, seasonality, analytics, forecasting engine, predictive model, AI forecast, sales forecast, consumption rate, usage pattern, stock, inventory, warehouse, item, product, SKU, stock level, quantity on hand, reorder, replenishment, stock movement, logistics, fulfillment, availability, automatic, automation, smart reorder, auto replenish, optimize, scheduler, auto plan, auto request, auto procurement, demand planner, auto adjustment, RFQ, purchase, procurement, supplier, vendor, purchase order, purchase request, sourcing, lead time, cost analysis, MRP, dashboard, report, KPIs, stock alert, demand signal, exceptions, Odoo inventory, Odoo purchase, Odoo MRP, Odoo automation, Odoo AI',
+    'author': 'Niyu Labs',
+    'website': 'https://niyulabs.com',
+    'license': 'OPL-1',
+    'depends': ['stock', 'sale_management', 'purchase', 'web'],
+    'images': ['static/description/banner.gif'],
+    'live_test_url': 'https://www.youtube.com/watch?v=QmzxcpQqO3M',
+    'data': [
+        'security/niyu_security.xml',
+        'security/ir.model.access.csv',
+        'data/ir_cron_data.xml',
+        'data/niyu_sync_control_data.xml',
+        'views/niyu_forecast_view.xml',
+        'views/res_config_settings_view.xml',
+        'views/niyu_sync_control_views.xml',
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'niyu_smart_stock/static/src/xml/niyu_chart_field.xml',
+            'niyu_smart_stock/static/src/js/niyu_chart_field.js',
+            'niyu_smart_stock/static/src/xml/niyu_dashboard.xml',
+            'niyu_smart_stock/static/src/js/niyu_dashboard.js',
+        ],
+    },
+    'installable': True,
+    'application': True,
+}

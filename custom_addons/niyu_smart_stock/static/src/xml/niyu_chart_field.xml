@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="niyu_smart_stock.NiyuChartField">
+        <div class="o_niyu_chart_container" style="position: relative; height: 300px; width: 100%;">
+            <canvas t-ref="chartCanvas"></canvas>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="group_niyu_forecast_user" model="res.groups">
+            <field name="name">Niyu Forecast User</field>
+        </record>
+
+        <record id="group_niyu_forecast_manager" model="res.groups">
+            <field name="name">Niyu Forecast Manager</field>
+            <field name="implied_ids" eval="[(4, ref('niyu_smart_stock.group_niyu_forecast_user'))]"/>
+        </record>
+    </data>
+</odoo>

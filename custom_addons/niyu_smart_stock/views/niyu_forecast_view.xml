@@ -1,0 +1,598 @@
+<odoo>
+    <!-- ACTION LINES -->
+    <record id="view_niyu_forecast_list" model="ir.ui.view">
+        <field name="name">niyu.forecast.result.list</field>
+        <field name="model">niyu.forecast.result</field>
+        <field name="arch" type="xml">
+            <list string="Action Lines"
+                  decoration-danger="coverage_status in ('critical', 'out')"
+                  decoration-warning="coverage_status == 'warning'"
+                  decoration-success="coverage_status == 'normal'"
+                  decoration-muted="coverage_status == 'ignored'"
+                  default_order="suggested_buy desc, suggested_transfer_qty desc, last_updated desc">
+                <field name="exception_bucket" widget="badge"/>
+                <field name="product_id"/>
+                <field name="warehouse_id" optional="show"/>
+                <field name="vendor_id" optional="show"/>
+                <field name="coverage_status" widget="badge"
+                       decoration-danger="coverage_status in ('critical', 'out')"
+                       decoration-warning="coverage_status == 'warning'"
+                       decoration-success="coverage_status == 'normal'"
+                       decoration-muted="coverage_status == 'ignored'"/>
+                <field name="setup_issue" optional="show"/>
+                <field name="current_stock" optional="show"/>
+                <field name="incoming_po_qty" optional="show"/>
+                <field name="incoming_transfer_qty" optional="show"/>
+                <field name="net_available" optional="show"/>
+                <field name="forecast_30d" optional="show"/>
+                <field name="days_of_coverage" optional="show"/>
+                <field name="suggested_buy" sum="Total Buy" decoration-bf="1"/>
+                <field name="suggested_transfer_qty" sum="Total Transfer" optional="show"/>
+                <field name="donor_count" optional="show"/>
+                <field name="transfer_sources_summary" optional="show"/>
+                <field name="transfer_coverage_pct" optional="show"/>
+                <field name="action_type" widget="badge" optional="show"/>
+                <field name="execution_status" widget="badge" optional="show"/>
+                <field name="purchase_order_count" optional="show"/>
+                <field name="transfer_picking_count" optional="show"/>
+                <field name="cost_to_restock" sum="Total Capital" optional="hide"/>
+                <field name="last_updated" optional="show"/>
+
+                <button name="action_create_transfer" type="object" icon="fa-exchange" title="Create Transfer"
+                        invisible="can_create_transfer == False or action_type == 'split' or transfer_step_state == 'created'"/>
+                <button name="action_create_transfer" type="object" icon="fa-exchange" title="Step 1: Create Transfers"
+                        invisible="can_create_transfer == False or action_type != 'split' or transfer_step_state == 'created'"/>
+                <button name="action_open_transfers" type="object" icon="fa-external-link" title="Open Transfer(s)"
+                        invisible="transfer_picking_count == 0"/>
+
+                <button name="action_create_po" type="object" icon="fa-shopping-cart" title="Create / Update RFQ"
+                        invisible="can_create_po == False or action_type == 'split' or buy_step_state == 'created'"/>
+                <button name="action_create_po" type="object" icon="fa-shopping-cart" title="Step 2: Create RFQ for Balance"
+                        invisible="can_create_po == False or action_type != 'split' or buy_step_state == 'created'"/>
+                <button name="action_open_purchase_orders" type="object" icon="fa-external-link" title="Open RFQ / PO"
+                        invisible="purchase_order_count == 0"/>
+
+                <button name="action_ignore" type="object" icon="fa-ban" title="Ignore"
+                        invisible="ignored == True"/>
+                <button name="action_unignore" type="object" icon="fa-undo" title="Unignore"
+                        invisible="ignored == False"/>
+
+                <field name="ignored" column_invisible="1"/>
+                <field name="has_vendor" column_invisible="1"/>
+                <field name="can_create_po" column_invisible="1"/>
+                <field name="can_create_transfer" column_invisible="1"/>
+                <field name="needs_attention" column_invisible="1"/>
+                <field name="buy_step_state" column_invisible="1"/>
+                <field name="transfer_step_state" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_search" model="ir.ui.view">
+        <field name="name">niyu.forecast.result.search</field>
+        <field name="model">niyu.forecast.result</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="vendor_id"/>
+                <field name="run_id"/>
+                <field name="transfer_sources_summary"/>
+                <group>
+                    <filter name="needs_attention" string="Needs Attention" domain="[('needs_attention', '=', True)]"/>
+                    <filter name="buy_now" string="Buy Now" domain="[('exception_bucket', '=', 'buy_now')]"/>
+                    <filter name="transfer_now" string="Transfer Now" domain="[('exception_bucket', '=', 'transfer_now')]"/>
+                    <filter name="split_now" string="Transfer + Buy" domain="[('exception_bucket', '=', 'split_now')]"/>
+                    <filter name="needs_setup" string="Setup Needed" domain="[('exception_bucket', '=', 'setup')]"/>
+                    <filter name="watch" string="Watch" domain="[('exception_bucket', '=', 'watch')]"/>
+                    <filter name="ignored" string="Ignored" domain="[('exception_bucket', '=', 'ignored')]"/>
+                    <separator/>
+                    <filter name="multi_donor" string="Multiple Donors" domain="[('donor_count', '&gt;', 1)]"/>
+                    <filter name="missing_vendor" string="Missing Vendor" domain="[('setup_issue', '=', 'missing_vendor')]"/>
+                    <filter name="missing_transfer_source" string="Missing Transfer Source" domain="[('setup_issue', '=', 'missing_transfer_source')]"/>
+                    <filter name="no_rule" string="No Planning Rule" domain="[('has_policy', '=', False)]"/>
+                    <filter name="ready_po" string="Ready for RFQ" domain="[('can_create_po', '=', True)]"/>
+                    <filter name="ready_transfer" string="Ready for Transfer" domain="[('can_create_transfer', '=', True)]"/>
+                    <filter name="pending_execution" string="Pending Execution" domain="[('execution_status', '=', 'pending')]"/>
+                    <filter name="partial_execution" string="Partially Executed" domain="[('execution_status', '=', 'partial')]"/>
+                    <filter name="done_execution" string="Executed" domain="[('execution_status', '=', 'done')]"/>
+                    <filter name="blocked_execution" string="Blocked" domain="[('execution_status', '=', 'blocked')]"/>
+                    <separator/>
+                    <filter name="group_action" string="Group by Action Required" context="{'group_by': 'exception_bucket'}"/>
+                    <filter name="group_product" string="Group by Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_warehouse" string="Group by Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_vendor" string="Group by Vendor" context="{'group_by': 'vendor_id'}"/>
+                    <filter name="group_run" string="Group by Run" context="{'group_by': 'run_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_form" model="ir.ui.view">
+        <field name="name">niyu.forecast.result.form</field>
+        <field name="model">niyu.forecast.result</field>
+        <field name="arch" type="xml">
+            <form string="Action Line">
+                <header>
+                    <button name="action_create_transfer" string="Create Transfer" type="object" class="btn-primary"
+                            invisible="can_create_transfer == False or action_type == 'split' or transfer_step_state == 'created'"/>
+                    <button name="action_create_transfer" string="1. Create Transfers" type="object" class="btn-primary"
+                            invisible="can_create_transfer == False or action_type != 'split' or transfer_step_state == 'created'"/>
+                    <button name="action_open_transfers" string="Open Transfer(s)" type="object"
+                            invisible="transfer_picking_count == 0"/>
+
+                    <button name="action_create_po" string="Create / Update RFQ" type="object" class="btn-primary"
+                            invisible="can_create_po == False or action_type == 'split' or buy_step_state == 'created'"/>
+                    <button name="action_create_po" string="2. Create RFQ for Balance" type="object" class="btn-primary"
+                            invisible="can_create_po == False or action_type != 'split' or buy_step_state == 'created'"/>
+                    <button name="action_open_purchase_orders" string="Open RFQ / PO" type="object"
+                            invisible="purchase_order_count == 0"/>
+
+                    <button name="action_reset_execution_links" string="Reset Linked Docs" type="object"
+                            invisible="purchase_order_count == 0 and transfer_picking_count == 0"/>
+
+                    <button name="action_ignore" string="Ignore" type="object" invisible="ignored == True"/>
+                    <button name="action_unignore" string="Unignore" type="object" invisible="ignored == False"/>
+                    <field name="exception_bucket" widget="badge"/>
+                    <field name="execution_status" widget="badge"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="product_id" class="oe_edit_only"/>
+                        <h1><field name="product_id"/></h1>
+                        <div class="text-muted mt8">
+                            <field name="warehouse_id" placeholder="All Warehouses"/>
+                        </div>
+                    </div>
+
+                    <group string="Recommended Steps">
+                        <field name="action_guidance" nolabel="1" readonly="1"/>
+                    </group>
+
+                    <group string="Execution Status">
+                        <field name="execution_guidance" nolabel="1" readonly="1"/>
+                    </group>
+
+                    <group>
+                        <group string="Context">
+                            <field name="company_id"/>
+                            <field name="run_id"/>
+                            <field name="policy_id"/>
+                            <field name="vendor_id"/>
+                            <field name="last_updated"/>
+                        </group>
+                        <group string="Decision Status">
+                            <field name="action_type"/>
+                            <field name="exception_bucket" readonly="1"/>
+                            <field name="execution_status" readonly="1"/>
+                            <field name="buy_step_state" readonly="1"/>
+                            <field name="transfer_step_state" readonly="1"/>
+                            <field name="setup_issue" readonly="1"/>
+                            <field name="ignored"/>
+                            <field name="ignore_source"/>
+                            <field name="has_vendor" readonly="1"/>
+                            <field name="has_policy" readonly="1"/>
+                            <field name="can_create_po" readonly="1"/>
+                            <field name="can_create_transfer" readonly="1"/>
+                            <field name="confidence_score"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Coverage">
+                            <group>
+                                <group>
+                                    <field name="current_stock"/>
+                                    <field name="forecast_30d"/>
+                                    <field name="forecast_60d"/>
+                                    <field name="forecast_90d"/>
+                                    <field name="forecast_120d"/>
+                                </group>
+                                <group>
+                                    <field name="daily_sales" readonly="1"/>
+                                    <field name="days_of_coverage" readonly="1"/>
+                                    <field name="coverage_status" readonly="1"/>
+                                    <field name="cost_to_restock" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Supply &amp; Replenishment">
+                            <group>
+                                <group>
+                                    <field name="reserved_qty"/>
+                                    <field name="incoming_po_qty"/>
+                                    <field name="incoming_transfer_qty"/>
+                                    <field name="net_available" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="lead_time_days"/>
+                                    <field name="service_level_target"/>
+                                    <field name="safety_stock"/>
+                                    <field name="reorder_point"/>
+                                    <field name="target_stock"/>
+                                    <field name="recommended_qty"/>
+                                    <field name="rounded_order_qty"/>
+                                    <field name="suggested_buy" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Transfer Plan">
+                            <group>
+                                <group>
+                                    <field name="donor_count" readonly="1"/>
+                                    <field name="transfer_sources_summary" readonly="1"/>
+                                    <field name="suggested_transfer_qty" readonly="1"/>
+                                    <field name="transfer_coverage_pct" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="suggested_buy" readonly="1"/>
+                                </group>
+                            </group>
+                            <field name="transfer_plan_ids" readonly="1">
+                                <list>
+                                    <field name="source_warehouse_id"/>
+                                    <field name="dest_warehouse_id"/>
+                                    <field name="qty"/>
+                                    <field name="coverage_pct"/>
+                                    <field name="source_available_qty"/>
+                                    <field name="source_protected_qty"/>
+                                    <field name="source_remaining_after"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Readiness &amp; Setup">
+                            <group>
+                                <group>
+                                    <field name="setup_issue" readonly="1"/>
+                                    <field name="has_policy" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="can_create_po" readonly="1"/>
+                                    <field name="can_create_transfer" readonly="1"/>
+                                    <field name="purchase_order_count" readonly="1"/>
+                                    <field name="transfer_picking_count" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Linked Documents">
+                            <group>
+                                <group string="Purchase">
+                                    <field name="buy_step_state" readonly="1"/>
+                                    <field name="purchase_order_count" readonly="1"/>
+                                    <field name="purchase_order_refs" readonly="1"/>
+                                    <field name="po_last_action_at" readonly="1"/>
+                                    <field name="purchase_order_ids" widget="many2many_tags" readonly="1"/>
+                                </group>
+                                <group string="Transfer">
+                                    <field name="transfer_step_state" readonly="1"/>
+                                    <field name="transfer_picking_count" readonly="1"/>
+                                    <field name="transfer_picking_refs" readonly="1"/>
+                                    <field name="transfer_last_action_at" readonly="1"/>
+                                    <field name="transfer_picking_ids" widget="many2many_tags" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Planner Note">
+                            <field name="action_reason" placeholder="Why this action exists / what the planner should know..."/>
+                        </page>
+
+                        <page string="Prediction Graph">
+                            <field name="chart_data" widget="niyu_chart" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- RUNS -->
+    <record id="view_niyu_forecast_run_list" model="ir.ui.view">
+        <field name="name">niyu.forecast.run.list</field>
+        <field name="model">niyu.forecast.run</field>
+        <field name="arch" type="xml">
+            <list string="Forecast Runs" default_order="create_date desc">
+                <field name="name"/>
+                <field name="state" widget="badge"/>
+                <field name="company_id"/>
+                <field name="horizon_days"/>
+                <field name="schema_version"/>
+                <field name="started_at"/>
+                <field name="completed_at"/>
+                <field name="line_count"/>
+                <field name="job_id" optional="hide"/>
+                <button name="action_open_lines" type="object" icon="fa-list" title="Open Lines"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_run_form" model="ir.ui.view">
+        <field name="name">niyu.forecast.run.form</field>
+        <field name="model">niyu.forecast.run</field>
+        <field name="arch" type="xml">
+            <form string="Forecast Run">
+                <header>
+                    <button name="action_open_lines" string="Open Lines" type="object" class="btn-primary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,queued,running,done,failed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id"/>
+                            <field name="warehouse_ids" widget="many2many_tags"/>
+                            <field name="job_id"/>
+                        </group>
+                        <group>
+                            <field name="schema_version"/>
+                            <field name="horizon_days"/>
+                            <field name="started_at"/>
+                            <field name="completed_at"/>
+                            <field name="line_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="message" placeholder="Run log / failure message / notes..."/>
+                    <field name="line_ids" readonly="1">
+                        <list>
+                            <field name="product_id"/>
+                            <field name="warehouse_id"/>
+                            <field name="exception_bucket" widget="badge"/>
+                            <field name="forecast_30d"/>
+                            <field name="suggested_buy"/>
+                            <field name="suggested_transfer_qty"/>
+                            <field name="donor_count"/>
+                            <field name="action_type"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- PLANNING RULES -->
+    <record id="view_niyu_replenishment_policy_list" model="ir.ui.view">
+        <field name="name">niyu.replenishment.policy.list</field>
+        <field name="model">niyu.replenishment.policy</field>
+        <field name="arch" type="xml">
+            <list string="Planning Rules" default_order="priority desc, id desc">
+                <field name="name"/>
+                <field name="scope_summary"/>
+                <field name="behavior_summary"/>
+                <field name="priority"/>
+                <field name="active"/>
+                <button name="action_open_matching_lines" type="object" icon="fa-filter" title="Open Matching Lines"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_niyu_replenishment_policy_search" model="ir.ui.view">
+        <field name="name">niyu.replenishment.policy.search</field>
+        <field name="model">niyu.replenishment.policy</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <field name="vendor_id"/>
+                <field name="product_id"/>
+                <field name="product_tmpl_id"/>
+                <field name="categ_id"/>
+                <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="group_warehouse" string="Group by Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                <filter name="group_vendor" string="Group by Vendor" context="{'group_by': 'vendor_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_niyu_replenishment_policy_form" model="ir.ui.view">
+        <field name="name">niyu.replenishment.policy.form</field>
+        <field name="model">niyu.replenishment.policy</field>
+        <field name="arch" type="xml">
+            <form string="Planning Rule">
+                <header>
+                    <button name="action_open_matching_lines" string="Open Matching Lines" type="object" class="btn-primary"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="Example: Imported fast movers"/></h1>
+                        <div class="text-muted mt8">
+                            <field name="scope_summary" readonly="1" nolabel="1"/>
+                        </div>
+                        <div class="text-muted mt8">
+                            <field name="behavior_summary" readonly="1" nolabel="1"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="Applies when">
+                            <field name="company_id"/>
+                            <field name="warehouse_id" placeholder="All warehouses"/>
+                            <field name="vendor_id" placeholder="Any vendor"/>
+                            <field name="product_id" placeholder="One specific product"/>
+                            <field name="product_tmpl_id" placeholder="All variants of one template"/>
+                            <field name="categ_id" placeholder="Whole category tree"/>
+                            <field name="priority"/>
+                        </group>
+                        <group string="Changes">
+                            <field name="service_level_target"/>
+                            <field name="min_days_of_stock"/>
+                            <field name="max_days_of_stock"/>
+                            <field name="lead_time_days"/>
+                            <field name="safety_stock_days"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Order Constraints">
+                            <field name="fixed_order_qty"/>
+                            <field name="qty_multiple"/>
+                            <field name="min_order_qty"/>
+                        </group>
+                        <group string="Supply to Count Before Buying">
+                            <field name="include_incoming_po"/>
+                            <field name="include_incoming_transfers"/>
+                            <field name="include_draft_rfqs"/>
+                        </group>
+                    </group>
+
+                    <group string="Why this rule exists">
+                        <field name="note" nolabel="1" placeholder="Short business note. Example: Imported SKUs need more buffer because inbound shipments are unreliable."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- EXCLUSIONS -->
+    <record id="view_niyu_forecast_exclusion_list" model="ir.ui.view">
+        <field name="name">niyu.forecast.exclusion.list</field>
+        <field name="model">niyu.forecast.exclusion</field>
+        <field name="arch" type="xml">
+            <list string="Exclusions" default_order="active desc, id desc">
+                <field name="name"/>
+                <field name="scope_summary"/>
+                <field name="match_count"/>
+                <field name="active"/>
+                <button name="action_open_matching_products" type="object" icon="fa-cubes" title="Open Matching Products"/>
+                <button name="action_open_matching_lines" type="object" icon="fa-filter" title="Open Affected Lines"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_exclusion_search" model="ir.ui.view">
+        <field name="name">niyu.forecast.exclusion.search</field>
+        <field name="model">niyu.forecast.exclusion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_niyu_forecast_exclusion_form" model="ir.ui.view">
+        <field name="name">niyu.forecast.exclusion.form</field>
+        <field name="model">niyu.forecast.exclusion</field>
+        <field name="arch" type="xml">
+            <form string="Exclude from Planning">
+                <header>
+                    <button name="action_open_matching_products" string="Open Matching Products" type="object" class="btn-primary"/>
+                    <button name="action_open_matching_lines" string="Open Affected Lines" type="object"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="Example: Obsolete or non-managed items"/></h1>
+                        <div class="text-muted mt8">
+                            <field name="scope_summary" readonly="1" nolabel="1"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="What to Exclude">
+                            <field name="company_id"/>
+                            <field name="match_count" readonly="1"/>
+                            <field name="product_ids" widget="many2many_tags" options="{'no_create_edit': True}" placeholder="Add one or more products"/>
+                            <field name="product_tmpl_ids" widget="many2many_tags" options="{'no_create_edit': True}" placeholder="Add one or more templates"/>
+                            <field name="categ_ids" widget="many2many_tags" options="{'no_create_edit': True}" placeholder="Add one or more categories"/>
+                        </group>
+                        <group string="Why exclude it">
+                            <field name="reason" nolabel="1" placeholder="Example: spare parts only, obsolete, samples, internal use, or project-specific items."/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTIONS -->
+    <record id="action_niyu_create_po" model="ir.actions.server">
+        <field name="name">Create Purchase Orders</field>
+        <field name="model_id" ref="model_niyu_forecast_result"/>
+        <field name="binding_model_id" ref="model_niyu_forecast_result"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_create_po()</field>
+    </record>
+
+    <record id="action_niyu_create_transfer" model="ir.actions.server">
+        <field name="name">Create Internal Transfers</field>
+        <field name="model_id" ref="model_niyu_forecast_result"/>
+        <field name="binding_model_id" ref="model_niyu_forecast_result"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_create_transfer()</field>
+    </record>
+
+    <record id="action_niyu_start_sync" model="ir.actions.server">
+        <field name="name">Run AI Forecast</field>
+        <field name="model_id" ref="model_niyu_sync_engine"/>
+        <field name="state">code</field>
+        <field name="code">model.action_start_forecast()</field>
+    </record>
+
+    <record id="action_niyu_forecast_window" model="ir.actions.act_window">
+        <field name="name">Action Lines</field>
+        <field name="res_model">niyu.forecast.result</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_niyu_forecast_search"/>
+        <field name="context">{'search_default_needs_attention': 1}</field>
+        <field name="views" eval="[
+            (ref('view_niyu_forecast_list'), 'list'),
+            (ref('view_niyu_forecast_form'), 'form')
+        ]"/>
+    </record>
+
+    <record id="action_niyu_forecast_runs" model="ir.actions.act_window">
+        <field name="name">Runs</field>
+        <field name="res_model">niyu.forecast.run</field>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[
+            (ref('view_niyu_forecast_run_list'), 'list'),
+            (ref('view_niyu_forecast_run_form'), 'form')
+        ]"/>
+    </record>
+
+    <record id="action_niyu_replenishment_policies" model="ir.actions.act_window">
+        <field name="name">Planning Rules</field>
+        <field name="res_model">niyu.replenishment.policy</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_niyu_replenishment_policy_search"/>
+        <field name="views" eval="[
+            (ref('view_niyu_replenishment_policy_list'), 'list'),
+            (ref('view_niyu_replenishment_policy_form'), 'form')
+        ]"/>
+    </record>
+
+    <record id="action_niyu_forecast_exclusions" model="ir.actions.act_window">
+        <field name="name">Exclusions</field>
+        <field name="res_model">niyu.forecast.exclusion</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_niyu_forecast_exclusion_search"/>
+        <field name="views" eval="[
+            (ref('view_niyu_forecast_exclusion_list'), 'list'),
+            (ref('view_niyu_forecast_exclusion_form'), 'form')
+        ]"/>
+    </record>
+
+    <record id="action_niyu_dashboard" model="ir.actions.client">
+        <field name="name">Niyu Planning Overview</field>
+        <field name="tag">niyu_dashboard_client_action</field>
+    </record>
+
+    <!-- MENUS -->
+    <menuitem id="menu_niyu_root" name="Niyu AI" parent="stock.menu_stock_root" sequence="90" action="action_niyu_dashboard" groups="niyu_smart_stock.group_niyu_forecast_user"/>
+    <menuitem id="menu_niyu_dashboard_main" name="Planning Overview" parent="menu_niyu_root" action="action_niyu_dashboard" sequence="0" groups="niyu_smart_stock.group_niyu_forecast_user"/>
+    <menuitem id="menu_niyu_smart_stock" name="Action Lines" parent="menu_niyu_root" action="action_niyu_forecast_window" sequence="1" groups="niyu_smart_stock.group_niyu_forecast_user"/>
+    <menuitem id="menu_niyu_runs" name="Runs" parent="menu_niyu_root" action="action_niyu_forecast_runs" sequence="2" groups="niyu_smart_stock.group_niyu_forecast_user"/>
+    <menuitem id="menu_niyu_policies" name="Planning Rules" parent="menu_niyu_root" action="action_niyu_replenishment_policies" sequence="3" groups="niyu_smart_stock.group_niyu_forecast_manager"/>
+    <menuitem id="menu_niyu_exclusions" name="Exclusions" parent="menu_niyu_root" action="action_niyu_forecast_exclusions" sequence="4" groups="niyu_smart_stock.group_niyu_forecast_manager"/>
+    <menuitem id="menu_niyu_run_sync" name="Run Sync Now" parent="menu_niyu_root" action="action_niyu_start_sync" sequence="5" groups="niyu_smart_stock.group_niyu_forecast_manager"/>
+</odoo>
