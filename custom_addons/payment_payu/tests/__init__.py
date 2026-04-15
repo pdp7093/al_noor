@@ -1,3 +1,0 @@
-from . import test_payment_provider
-from . import test_payment_transaction
-from . import test_payment_provider_credentials

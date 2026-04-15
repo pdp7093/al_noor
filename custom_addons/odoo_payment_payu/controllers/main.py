@@ -47,25 +47,26 @@ class PayUController(Controller):
         if request.httprequest.content_type == 'application/json':
             payload = request.httprequest.get_json(silent=True)
 
-        _logger.info('📩 PayU WEBHOOK payload:\n%s', pprint.pformat(payload))
+        # DEBUG only (no spam in production)
+        _logger.debug('PayU WEBHOOK payload:\n%s', pprint.pformat(payload))
 
         tx_sudo = request.env['payment.transaction'].sudo()._search_by_reference('payu', payload)
 
         if not tx_sudo:
-            _logger.warning('❌ No matching transaction for webhook')
+            _logger.warning('No matching transaction for webhook')
             return request.make_json_response('')
 
         try:
             # 🔐 Signature verification
             PayUController._verify_signature(payload, tx_sudo)
 
-            # Process (safe)
+            # Process
             tx_sudo._process('payu', payload)
 
-            _logger.info('✅ Webhook processed successfully (Ref: %s)', tx_sudo.reference)
+            _logger.debug('Webhook processed (Ref: %s)', tx_sudo.reference)
 
-        except Exception:
-            _logger.exception('❌ Webhook processing failed')
+        except Exception as e:
+            _logger.error('Webhook processing failed: %s', str(e))
 
         return request.make_json_response('')
 
